@@ -1,21 +1,27 @@
 #pragma once
 
 #include <chrono>
+#include <string>
+#include <iostream>
 
 namespace op {
 
 class benchmark {
 private:
-    const char * m;
+    std::string msg_;
+    const std::ostream & stream_;
     std::chrono::high_resolution_clock::time_point t1, t2;
 public:
-    explicit benchmark(const char* msg=nullptr) : m(msg) {
+    benchmark(std::string msg, std::ostream & stream = std::cerr)
+        : msg_(std::move(msg))
+        , stream_(stream)
+    {
         start();
     }
     ~benchmark() {
         stop();
-        if (m) std::cout << m << " ";
-        std::cout << msec_elapsed() << std::endl;
+        if (!msg_.empty()) stream_ << msg_ << " ";
+        stream_ << msec_elapsed() << std::endl;
     }
     inline void start() {
         t1 = std::chrono::high_resolution_clock::now();
@@ -28,6 +34,6 @@ public:
     }
 };
 
-#define OP_BENCHMARK op::benchmark __op_bench##COUNTER(__FUNCTION__)
+#define OP_BENCHMARK op::benchmark __op_bench##COUNTER(__FUNCTION__, std::cerr)
 
 };
