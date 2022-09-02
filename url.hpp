@@ -33,55 +33,64 @@
 
 namespace op {
 
-// класс для парсинга URL
+/*
+ * A class that able to parse string with representation of URL
+ * for example "protocol://host:port/path?query_string".
+ * And also Encode/Decode using urlencode() for invalid URL characters.
+ */
+
 class URL {
 public:
-std::string QueryString, // параметры запроса
-    Path,     // путь на сервере
-    Protocol, // протокол
-    Host,     // хост
-    Port;     // порт
-// функция парсинга
-static URL Parse(const std::string &uri) {
+    std::string QueryString;
+    std::string Path;
+    std::string Protocol;
+    std::string Host;
+    std::string Port;
+
+static URL Parse(const std::string & uri) {
     URL result;
-    if (uri.length() == 0)
+    if (uri.length() == 0) {
         return result;
+    }
     typedef std::string::const_iterator iterator_t;
     iterator_t uriEnd = uri.end();
     // get query start
     iterator_t queryStart = std::find(uri.begin(), uriEnd, '?');
-    // протокол
+    // protocol
     iterator_t protocolStart = uri.begin();
-    iterator_t protocolEnd = std::find(protocolStart, uriEnd, ':');            //"://");
+    iterator_t protocolEnd = std::find(protocolStart, uriEnd, ':');
     if (protocolEnd != uriEnd) {
         std::string prot = &*(protocolEnd);
         if ((prot.length() > 3) && (prot.substr(0, 3) == "://")) {
             result.Protocol = std::string(protocolStart, protocolEnd);
             protocolEnd += 3;   //      ://
-        } else
+        } else {
             protocolEnd = uri.begin();  // no protocol
-    } else
+        }
+    } else {
         protocolEnd = uri.begin();  // no protocol
-    // хост
+    }
+    // hostname
     iterator_t hostStart = protocolEnd;
     iterator_t pathStart = std::find(hostStart, uriEnd, '/');  // get pathStart
     iterator_t hostEnd = std::find(protocolEnd, 
-        (pathStart != uriEnd) ? pathStart : queryStart,
-        ':');  // check for port
+        (pathStart != uriEnd) ? pathStart : queryStart, ':');  // check for port
     result.Host = std::string(hostStart, hostEnd);
-    // порт
+    // port
     if ((hostEnd != uriEnd) && ((&*(hostEnd))[0] == L':')) {
-        // we have a port
+        // we've a port
         hostEnd++;
         iterator_t portEnd = (pathStart != uriEnd) ? pathStart : queryStart;
         result.Port = std::string(hostEnd, portEnd);
     }
-    // путь
-    if (pathStart != uriEnd)
-        result.Path = std::string(pathStart+1, queryStart);
-    // параметры запроса
-    if (queryStart != uriEnd)
-        result.QueryString = std::string(queryStart+1, uri.end());
+    // path
+    if (pathStart != uriEnd) {
+        result.Path = std::string(pathStart + 1, queryStart);
+    }
+    // query string
+    if (queryStart != uriEnd) {
+        result.QueryString = std::string(queryStart + 1, uri.end());
+    }
     return result;
 }   // Parse
 
@@ -93,9 +102,9 @@ static std::string Encode(const std::string & encoded) {
    unsigned char * pEnd = pStart;
    const unsigned char * const SRC_END = pSrc + SRC_LEN;
    for (; pSrc < SRC_END; ++pSrc) {
-      if (SAFE[*pSrc]) 
+      if (SAFE[*pSrc]) {
          *pEnd++ = *pSrc;
-      else {
+      } else {
          // escape this char
          *pEnd++ = '%';
          *pEnd++ = DEC2HEX[*pSrc >> 4];
@@ -112,7 +121,7 @@ static std::string Decode(const std::string & decoded) {
    // sign but are not followed by two hexadecimal characters
    // (0-9, A-F) are reserved for future extension"
    const char DEC2HEX[] = "0123456789ABCDEF";
-   const unsigned char * pSrc = (const unsigned char *)decoded.c_str();
+   const unsigned char * pSrc = (const unsigned char *) decoded.c_str();
    const int SRC_LEN = decoded.length();
    const unsigned char * const SRC_END = pSrc + SRC_LEN;
    // last decodable '%' 
@@ -122,8 +131,8 @@ static std::string Decode(const std::string & decoded) {
    while (pSrc < SRC_LAST_DEC) {
       if (*pSrc == '%') {
          char dec1, dec2;
-         if (-1 != (dec1 = HEX2DEC[*(pSrc + 1)])
-            && -1 != (dec2 = HEX2DEC[*(pSrc + 2)])) {
+         if (-1 != (dec1 = HEX2DEC[*(pSrc + 1)]) &&
+             -1 != (dec2 = HEX2DEC[*(pSrc + 2)])) {
             *pEnd++ = (dec1 << 4) + dec2;
             pSrc += 3;
             continue;
