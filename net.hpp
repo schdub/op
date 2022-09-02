@@ -82,6 +82,74 @@ public:
     }
 };
 
+class UDPSocket {
+    SOCKET mSocket;
+    sockaddr_in mAddr;
+
+    UDPSocket(const UDPSocket &);
+    UDPSocket operator= (const UDPSocket &);
+
+public:
+    explicit UDPSocket(SOCKET sd)
+        : mSocket(sd)
+    {}
+
+    explicit UDPSocket(const char * host, unsigned port)
+        : mSocket(INVALID_SOCKET)
+    {
+        mSocket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (mSocket == INVALID_SOCKET) {
+            WARN("socket() err='%d'", get_lasterror());
+            return;
+        }
+        ::memset(&mAddr, 0, sizeof(mAddr));
+        if (!op::NetUtils::lookupIPv4(host, &mAddr, SOCK_DGRAM)) {
+            WARN("lookup() failed err=%d", get_lasterror());
+            return;
+        }
+        mAddr.sin_family = AF_INET;
+        mAddr.sin_port   = htons(port);
+    }
+
+    ~UDPSocket() {
+        CLOSE_SOCKET(mSocket);
+    }
+
+    void release() { mSocket = INVALID_SOCKET; }
+
+    SOCKET sd() const { return mSocket; };
+
+    bool isOk() const { return mSocket != INVALID_SOCKET; }
+
+    bool isEAGAIN() const { return IS_EAGAIN; }
+
+    static int write_all(SOCKET sd, const char * buff, int count,
+                         sockaddr_in * addr, int addr_len) {
+        return sendto(sd, buff, count, 0, (sockaddr*) addr, addr_len);
+    }
+
+    int write_all(const char * buff, int count) {
+        return write_all(mSocket, buff, count, &mAddr, sizeof(mAddr));
+    }
+
+    static void gracefulclose(SOCKET sd) {
+        CLOSE_SOCKET(sd);
+    }
+
+    static int get_lasterror() {
+        #if WIN32
+            return WSAGetLastError();
+        #else
+            return errno;
+        #endif
+    }
+
+    static void set_reuseaddr(SOCKET sd, bool value) {
+        const int optval = value ? 1 : 0;
+        ::setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char*)&optval, sizeof(optval));
+    }
+};
+
 class   TCPSocket {
 public:
     explicit TCPSocket(SOCKET sd) : mSocket(sd) {}
