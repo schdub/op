@@ -35,7 +35,7 @@
   #pragma comment(lib,"ws2_32.lib")
   #define CLOSE_SOCKET(sd) ::shutdown(sd, 2), ::closesocket(sd)
   #define socklen_t        int  
-  #define NETINIT          { WSADATA wd; if (WSAStartup(0x202, &wd)) { WARN("WSAStartup error %d", WSAGetLastError()); return -1; } }
+  #define NETINIT          { WSADATA wd; if (WSAStartup(0x202, &wd)) { WARN("WSAStartup error %d", WSAGetLastError()); } }
   #define IS_EAGAIN        (WSAGetLastError() == WSAETIMEDOUT)
 #else
   #include <sys/types.h>
