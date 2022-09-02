@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2009-2015 Oleg Polivets. All rights reserved.
+// Copyright (C) 2009-2022 Oleg Polivets. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -49,7 +49,17 @@ namespace op {
 class StrUtils {
 public:
 
-#ifdef WIN32    
+#ifdef WIN32
+    static std::string fromUtf16ToWindows1251(const std::wstring & wstr) {
+        std::string convertedString;
+        int requiredSize = WideCharToMultiByte(1251, 0, wstr.c_str(), -1, 0, 0, 0, 0);
+        if (requiredSize > 0) {
+            std::vector<char> buffer(requiredSize);
+            WideCharToMultiByte(1251, 0, wstr.c_str(), -1, &buffer[0], requiredSize, 0, 0);
+            convertedString.assign(buffer.begin(), buffer.end() - 1);
+        }
+        return convertedString;
+    }
     static std::string fromUtf16ToUtf8(const std::wstring & wstr) {
         std::string convertedString;
         int requiredSize = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, 0, 0, 0, 0);
@@ -356,6 +366,7 @@ public:
         return ret;
     }
 
+#if 0
     //
     // Base58
     //
@@ -426,6 +437,7 @@ public:
         }
         return ret;
     }
+#endif
 
     //
     // Base64
