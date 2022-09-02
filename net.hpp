@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2009-2018 Oleg Polivets. All rights reserved.
+// Copyright (C) 2009-2022 Oleg Polivets. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
@@ -61,7 +61,7 @@ namespace op {
 
 class NetUtils {
 public:
-    static bool lookupIPv4(const char * host, struct sockaddr_in * addr) {
+    static bool lookupIPv4(const char * host, struct sockaddr_in * addr, int socktype) {
         unsigned long ret = inet_addr(host);
         if (ret != INADDR_NONE && ret != INADDR_ANY) {
             memcpy(&addr->sin_addr.s_addr, &ret, sizeof(ret));
@@ -70,7 +70,7 @@ public:
         struct addrinfo hints, *p = NULL;
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_INET; // use AF_INET6 to force IPv6
-        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_socktype = socktype;
         int rv = getaddrinfo(host, NULL, &hints, &p);
         if (rv != 0) {
             WARN("getaddrinfo: %s", gai_strerror(rv));
@@ -150,11 +150,15 @@ public:
     }
 };
 
-class   TCPSocket {
+class TCPSocket {
 public:
-    explicit TCPSocket(SOCKET sd) : mSocket(sd) {}
+    explicit TCPSocket(SOCKET sd)
+        : mSocket(sd)
+    {}
 
-    explicit TCPSocket(const char * host, unsigned port) : mSocket(INVALID_SOCKET) {
+    explicit TCPSocket(const char * host, unsigned port)
+        : mSocket(INVALID_SOCKET)
+    {
         mSocket = ::socket(AF_INET, SOCK_STREAM, 0);
         if (mSocket == INVALID_SOCKET) {
             WARN("socket() err='%d'", get_lasterror());
@@ -162,7 +166,7 @@ public:
         }
         sockaddr_in addr;
         ::memset(&addr, 0, sizeof(addr));
-        if (!op::NetUtils::lookupIPv4(host, &addr)) {
+        if (!op::NetUtils::lookupIPv4(host, &addr, SOCK_STREAM)) {
             WARN("lookup() failed err=%d", get_lasterror());
             return;
         }
