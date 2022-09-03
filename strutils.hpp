@@ -342,26 +342,32 @@ public:
         unsigned char * p = (unsigned char*)s.c_str();
         unsigned const  l = s.length() * sizeof(typename std::basic_string<C>::value_type);
         return toHex(p, l, lower_case);
-    } 
+    }
+    static bool hexNibble(char ch, char * pOut) {
+        bool ok = true;
+        if (ch >= 'A' && ch <= 'Z') { *pOut = ch - 'A' + 0x0A; } else
+        if (ch >= 'a' && ch <= 'z') { *pOut = ch - 'a' + 0x0A; } else
+        if (ch >= '0' && ch <= '9') { *pOut = ch - '0'; } else {
+            *pOut = 0;
+            ok = false;
+        }
+        return ok;
+    }
+    static bool hexByte(char h, char l, char * pOut) {
+        bool ok = hexNibble(h, &h) && hexNibble(l, &l);
+        *pOut = (h << 4)|l;
+        return ok;
+    }
     static std::string fromHex(const std::string & hexed) {
-        char h, l;
         std::string ret;
         int ie = hexed.length();
         ie -= (ie % 2 == 0) ? 1 : 2;
         for (int i = 0; i <= ie;) {
-            h = hexed[i++];
-            if (h >= 'A' && h <= 'F') { h = h - 'A' + 0x0a; } else
-            if (h >= 'a' && h <= 'f') { h = h - 'a' + 0x0a; } else
-            if (h >= '0' && h <= '9') { h -= '0'; } else {
-                h = 0;
-            }
-            l = hexed[i++];
-            if (l >= 'A' && l <= 'F') { l = l - 'A' + 0x0a; } else
-            if (l >= 'a' && l <= 'f') { l = l - 'a' + 0x0a; } else
-            if (l >= '0' && l <= '9') { l -= '0'; } else {
-                l = 0;
-            }
-            ret.push_back((h << 4)|l);
+            char h = hexed[i++];
+            char l = hexed[i++];
+            char t = 0;
+            hexByte(h, l, &t);
+            ret.push_back(t);
         }
         return ret;
     }

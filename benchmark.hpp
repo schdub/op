@@ -2,14 +2,14 @@
 
 #include <chrono>
 #include <string>
-#include <iostream>
+#include <iosfwd>
 
 namespace op {
 
 class benchmark {
 private:
     std::string msg_;
-    const std::ostream & stream_;
+    std::ostream & stream_;
     std::chrono::high_resolution_clock::time_point t1, t2;
 public:
     benchmark(std::string msg, std::ostream & stream = std::cerr)
