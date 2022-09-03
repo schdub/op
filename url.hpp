@@ -127,7 +127,7 @@ static std::string Decode(const std::string & value) {
     for (std::string::const_iterator i = value.begin(), n = value.end(); i != n;) {
         std::string::value_type c = (*i++);
         if (c != '%') {
-            unescaped << c;
+            unescaped << (c == '+' ? ' ' : c);
             continue;
         }
 

@@ -45,6 +45,12 @@ TEST(URL, Decode) {
         std::string decoded = op::URL::Decode(str_query);
         ASSERT_EQ(decoded, str_expected);
     }
+    {
+        std::string str_query("+One+two+three+");
+        std::string str_expected(" One two three ");
+        std::string decoded = op::URL::Decode(str_query);
+        ASSERT_EQ(decoded, str_expected);
+    }
 }
 
 int main(int argc, char ** argv) {
