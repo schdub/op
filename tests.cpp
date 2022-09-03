@@ -3,8 +3,39 @@
 #include <string>
 #include <sstream>
 #include <gtest/gtest.h>
+#include <cassert>
 
+#include "debug.hpp"
 #include "url.hpp"
+#include "eval.hpp"
+
+// Eval //////////////////////////////////////////////////////// //
+
+TEST(Eval, calculations) {
+
+    struct Expections {
+        std::string str_;
+        double exp_;
+    };
+    std::vector<Expections> to_exec = {
+        { "2 + 2",       4 },
+        { "2 + 2 * 2",   6 },
+        { "(2 + 2) * 2", 8 },
+        { "(2 - 2) + 2", 2 },
+        { "1 << 8",    256 },
+        { "64/8",        8 },
+        { "cos(60)",   0.5 },
+        { "sin(60)", 0.8660254037844386 },
+        { "tan(60)", 1.7320508075688767 },
+    };
+    for (size_t i = 0; i < to_exec.size(); ++i) {
+        int error = 0;
+        const auto & ref_original = to_exec[i];
+        double answer = op::eval::calcDouble(ref_original.str_, &error);
+        ASSERT_DOUBLE_EQ(answer, ref_original.exp_);
+        ASSERT_EQ(error, 0);
+    }
+}
 
 // URL ///////////////////////////////////////////////////////// //
 
