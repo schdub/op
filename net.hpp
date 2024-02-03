@@ -52,7 +52,18 @@
   #define IS_EAGAIN        (errno == EAGAIN)
 #endif // !WIN32
 
-#include "op/debug.hpp"
+#if (DEBUG_ENABLED == 1)
+  #include "op/debug.hpp"
+#else
+  #define LOG(m, ...)   ((void)0)
+  #define LOGINIT(n, l) ((void)0)
+  #define LOGUNINIT()   ((void)0)
+  #define LOG(m, ...)   ((void)0)
+  #define WARN(m, ...)  ((void)0)
+  #define HEXDUMP(m,b,s)((void)0)
+  #define LOGCTX
+#endif
+
 #include <sstream>
 #include <vector>
 #include <cstring> // memset
