@@ -48,6 +48,16 @@ namespace op {
 
 class StrUtils {
 public:
+    static bool starts_with(const std::string & a, const std::string & b) {
+        return b.size() <= a.size() && a.compare(0, b.size(), b) == 0;
+    }
+
+    static bool ends_with(const std::string & a, const std::string & b) {
+        if (a.size() < b.size()) {
+            return false;
+        }
+        return (0 == a.compare(a.size() - b.size(), b.size(), b));
+    }
 
 #ifdef WIN32
     static std::string fromUtf16ToWindows1251(const std::wstring & wstr) {
